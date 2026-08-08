@@ -16,7 +16,7 @@ class SeedDefaultsTests(TestCase):
         year = SchoolYear.objects.get(label='2025-26')
         self.assertEqual(year.periods.count(), 5)
         q0 = year.periods.get(order=0)
-        self.assertEqual(q0.name, 'Quarter 0')
+        self.assertEqual(q0.name, 'Orientation')
         self.assertEqual(q0.date_range_display, '8/11/25-8/30/25')
 
     def test_idempotent(self):
