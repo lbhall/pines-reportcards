@@ -1,29 +1,31 @@
-<!doctype html>
+{% load static %}<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ student.name }} — {{ year.label }} Report Card</title>
     <style>
-        @page { size: letter landscape; margin: 0.5in; }
+        @page { size: letter landscape; margin: 0.35in 0.5in; }
         * { box-sizing: border-box; }
         body {
-            font-family: Georgia, 'Times New Roman', serif;
-            font-size: 10pt;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9.5pt;
             color: #000;
             margin: 0;
-            background: #f0f0f0;
+            background: #e8e8e8;
         }
         .sheet {
-            width: 10in;
-            min-height: 7.5in;
+            position: relative;
+            width: 10.5in;
+            min-height: 7.6in;
             margin: 1rem auto;
-            padding: 0.4in 0.5in;
+            padding: 0.35in 0.45in 0.3in;
             background: #fff;
             box-shadow: 0 2px 12px rgba(0,0,0,.25);
+            overflow: hidden;
         }
         .toolbar {
-            max-width: 10in;
+            max-width: 10.5in;
             margin: 1rem auto 0;
             display: flex;
             gap: .5rem;
@@ -42,47 +44,79 @@
         .toolbar a.secondary { background: #fff; color: #1e5631; }
         @media print {
             body { background: #fff; }
-            .sheet { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; }
+            .sheet { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; overflow: visible; }
             .toolbar { display: none; }
         }
-        .school-header { text-align: center; line-height: 1.3; margin-bottom: .3rem; }
-        .school-header .ms { font-size: 14pt; font-weight: bold; }
-        .school-header .school { font-size: 13pt; font-weight: bold; }
-        .card-title { text-align: center; font-weight: bold; margin: .2rem 0 .4rem; }
-        .student-line { margin: .3rem 0 .5rem; }
-        .student-line .dob { margin-left: 3rem; }
-        table.grades { width: 100%; border-collapse: collapse; margin-bottom: .5rem; }
+        .watermark {
+            position: absolute;
+            top: 47%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 5.6in;
+            opacity: 0.10;
+            z-index: 0;
+        }
+        .content { position: relative; z-index: 1; }
+        .logo { position: absolute; top: 0.02in; left: 0.05in; width: 1.1in; }
+        .school-header {
+            text-align: center;
+            font-family: Georgia, 'Times New Roman', serif;
+            line-height: 1.25;
+        }
+        .school-header .ms { font-size: 17pt; font-weight: bold; }
+        .school-header .at { font-size: 9pt; }
+        .school-header .school { font-size: 14pt; font-weight: bold; }
+        .card-title { text-align: center; font-size: 12pt; margin-top: .35rem; }
+        .student-line { text-align: center; font-size: 12pt; margin-bottom: .5rem; }
+        table.grades { width: 100%; border-collapse: collapse; table-layout: fixed; }
         table.grades th, table.grades td {
-            border: 1px solid #444;
-            padding: 2px 4px;
-            text-align: center;
-            font-size: 8.5pt;
-        }
-        table.grades th.subject, table.grades td.subject {
+            padding: 1px 2px;
             text-align: left;
-            width: 11%;
+            font-size: 8pt;
+            vertical-align: bottom;
+            overflow: hidden;
+        }
+        table.grades col.subject { width: 1.35in; }
+        table.grades col.assessment { width: auto; }
+        table.grades col.narrow { width: 0.45in; }
+        th.period-title { font-weight: bold; font-size: 8.5pt; white-space: nowrap; }
+        th.work { font-weight: bold; padding-bottom: 0; }
+        th.colhead { font-weight: bold; text-decoration: underline; white-space: nowrap; }
+        td.subject { font-weight: normal; }
+        .section-label {
             font-weight: bold;
+            text-decoration: underline;
+            font-size: 10.5pt;
+            margin: .5rem 0 .1rem;
         }
-        table.grades .period-name { font-weight: bold; }
-        table.grades .period-dates { font-weight: normal; font-size: 7.5pt; }
-        table.grades .colhead { font-size: 7.5pt; font-weight: normal; }
-        .section-label { font-weight: bold; margin: .4rem 0 .15rem; font-size: 10pt; }
-        .section-label .note { font-weight: normal; font-style: italic; font-size: 8.5pt; }
-        table.attendance { border-collapse: collapse; margin-bottom: .6rem; width: 70%; }
+        .section-label.italic { font-style: italic; }
+        .section-note { font-style: italic; font-size: 8.5pt; }
+        table.attendance { border-collapse: collapse; margin-top: .1rem; }
         table.attendance th, table.attendance td {
-            border: 1px solid #444;
-            padding: 2px 6px;
-            font-size: 8.5pt;
-            text-align: center;
+            padding: 1px 6px 1px 0;
+            font-size: 9.5pt;
+            text-align: left;
         }
-        table.attendance .rowlabel { text-align: left; font-weight: bold; }
-        .signatures { display: flex; gap: 4rem; margin: 1.2rem 0 .6rem; }
+        table.attendance th { font-weight: bold; white-space: nowrap; }
+        table.attendance td.rowlabel { font-weight: normal; }
+        table.attendance col { min-width: 1.6in; }
+        .signatures { display: flex; gap: 3rem; margin: 1.1rem 0 .5rem; width: 75%; }
         .signature { flex: 1; }
-        .signature .line { border-bottom: 1px solid #000; height: 1.4rem; }
-        .signature .name { font-size: 9pt; padding-top: 2px; }
-        .legend { font-size: 7pt; line-height: 1.35; }
+        .signature .line { border-bottom: 1px solid #000; height: 1.3rem; }
+        .signature .name { font-size: 9.5pt; padding-top: 1px; }
+        .legend { font-size: 7.5pt; line-height: 1.4; }
         .legend p { margin: 1px 0; }
-        .footer { text-align: center; font-size: 8pt; margin-top: .8rem; color: #333; }
+        .legend .head { text-decoration: underline; font-size: 9pt; }
+        .legend .term { font-weight: bold; font-style: italic; }
+        .legend .wh { text-decoration: underline; font-style: italic; font-size: 9pt; }
+        .footer {
+            text-align: center;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 10.5pt;
+            font-weight: bold;
+            color: #4a7c59;
+            margin-top: .9rem;
+        }
     </style>
 </head>
 <body>
@@ -91,101 +125,99 @@
     <a class="secondary" href="{% url 'card_entry' student.pk year.pk %}">Back to entry</a>
 </div>
 <div class="sheet">
-    <div class="school-header">
-        <div class="ms">Middle School</div>
-        <div>at</div>
-        <div class="school">Pines Montessori School</div>
-    </div>
-    <div class="card-title">Middle School Report Card for:</div>
-    <div class="student-line">
-        <strong>Name:</strong> {{ student.name }}
-        <span class="dob"><strong>D.O.B.:</strong> {{ student.date_of_birth|date:'F j, Y' }}</span>
-    </div>
+    <img class="watermark" src="{% static 'reportcards/img/watermark.png' %}" alt="">
+    <div class="content">
+        <img class="logo" src="{% static 'reportcards/img/logo.jpg' %}" alt="Pines Montessori School logo">
+        <div class="school-header">
+            <div class="ms">Middle School</div>
+            <div class="at">at</div>
+            <div class="school">Pines Montessori School</div>
+        </div>
+        <div class="card-title">Middle School Report Card for:</div>
+        <div class="student-line">Name: {{ student.name }} &nbsp;D.O.B.: {{ student.date_of_birth|date:'F j, Y' }}</div>
 
-    {% for group_name, rows in grouped_rows %}
-    <div class="section-label">
-        {{ group_name }}
-        {% if group_name == 'Resources' %}<span class="note">(Class taught pass/fail)</span>{% endif %}
-    </div>
-    <table class="grades">
-        <thead>
-        <tr>
-            <th class="subject"></th>
-            {% for period in periods %}
-            <th colspan="3">
-                <div class="period-name">{{ period.name }}</div>
-                {% if period.date_range_display %}<div class="period-dates">{{ period.date_range_display }}</div>{% endif %}
-            </th>
+        {% for group_name, rows in grouped_rows %}
+        <div class="section-label{% if group_name == 'Resources' %} italic{% endif %}">{{ group_name }}</div>
+        {% if group_name == 'Resources' %}<div class="section-note">(Class taught pass/fail)</div>{% endif %}
+        <table class="grades">
+            <colgroup>
+                <col class="subject">
+                {% for period in periods %}<col class="assessment"><col class="narrow"><col class="narrow">{% endfor %}
+            </colgroup>
+            {% if forloop.first %}
+            <tr>
+                <th></th>
+                {% for period in periods %}
+                <th class="period-title" colspan="3">{{ period.name }}{% if period.date_range_display %}: {{ period.date_range_display }}{% endif %}</th>
+                {% endfor %}
+            </tr>
+            {% endif %}
+            <tr>
+                <th></th>
+                {% for period in periods %}
+                <th></th><th></th><th class="work">Work</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th></th>
+                {% for period in periods %}
+                <th class="colhead">Assessment</th>
+                <th class="colhead">Dsgn*</th>
+                <th class="colhead">Habits*</th>
+                {% endfor %}
+            </tr>
+            {% for row in rows %}
+            <tr>
+                <td class="subject">{{ row.subject.name }}</td>
+                {% for cell in row.cells %}
+                <td>{{ cell.assessment }}</td>
+                <td>{{ cell.designation }}</td>
+                <td>{{ cell.work_habits }}</td>
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        <tr>
-            <th class="subject"></th>
-            {% for period in periods %}
-            <th class="colhead">Assessment</th>
-            <th class="colhead">Dsgn*</th>
-            <th class="colhead">Work Habits*</th>
-            {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-        {% for row in rows %}
-        <tr>
-            <td class="subject">{{ row.subject.name }}</td>
-            {% for cell in row.cells %}
-            <td>{{ cell.assessment }}</td>
-            <td>{{ cell.designation }}</td>
-            <td>{{ cell.work_habits }}</td>
-            {% endfor %}
-        </tr>
+        </table>
         {% endfor %}
-        </tbody>
-    </table>
-    {% endfor %}
 
-    <div class="section-label">Attendance Report</div>
-    <table class="attendance">
-        <thead>
-        <tr>
-            <th class="rowlabel"></th>
-            {% for period in periods %}
-            <th>
-                <div>{{ period.name }}</div>
-                {% if period.date_range_display %}<div class="period-dates">{{ period.date_range_display }}</div>{% endif %}
-            </th>
-            {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td class="rowlabel">Absence:</td>
-            {% for att in attendance_cells %}<td>{{ att.absences }} day{{ att.absences|pluralize }}</td>{% endfor %}
-        </tr>
-        <tr>
-            <td class="rowlabel">Tardy</td>
-            {% for att in attendance_cells %}<td>{{ att.tardies }}</td>{% endfor %}
-        </tr>
-        </tbody>
-    </table>
+        <div class="section-label italic">Attendance Report</div>
+        <table class="attendance">
+            <tr>
+                <th></th>
+                {% for period in periods %}
+                <th>{{ period.name }}{% if period.date_range_display %}: {{ period.date_range_display }}{% endif %}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td class="rowlabel">Absence:</td>
+                {% for att in attendance_cells %}<td>{{ att.absences }} day{{ att.absences|pluralize }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="rowlabel">Tardy</td>
+                {% for att in attendance_cells %}<td>{{ att.tardies }}</td>{% endfor %}
+            </tr>
+        </table>
 
-    <div class="signatures">
-        {% if year.faculty_1 %}
-        <div class="signature"><div class="line"></div><div class="name">{{ year.faculty_1 }}</div></div>
-        {% endif %}
-        {% if year.faculty_2 %}
-        <div class="signature"><div class="line"></div><div class="name">{{ year.faculty_2 }}</div></div>
-        {% endif %}
+        <div class="signatures">
+            {% if year.faculty_1 %}
+            <div class="signature"><div class="line"></div><div class="name">{{ year.faculty_1 }}</div></div>
+            {% endif %}
+            {% if year.faculty_2 %}
+            <div class="signature"><div class="line"></div><div class="name">{{ year.faculty_2 }}</div></div>
+            {% endif %}
+        </div>
+
+        <div class="legend">
+            <p><span class="head">*Dsgn=Designation:</span> <span class="term">Level(L)</span>-high-quality work with normal interaction, <span class="term">Advanced(A)</span>—much depth and very high-quality work with normal interaction, <span class="term">Level/Modified(L/M)</span> high-quality work with adaptive testing situations, <span class="term">Modified(M)</span>-extensive coaching, alternative assessment, or minimum requirements,</p>
+            <p><span class="wh">*Work Habits: M=Mastered, C=Competent, I=Improving, R=Reminders needed</span></p>
+            <p>*Mastery Learning mandates re-testing in all core subject areas to achieve 80%.</p>
+            <p>*Grades less than 80% are due to late work submission.</p>
+            <p>*Independent Study-Research: COM=complete, INC=incomplete, 7th year graded in Quarter 2(board) and Quarter 4 (overall); 8th year Quarter 2(paper/board), Quarter 4(paper/board)</p>
+            <p>*Internship Week is the week in which 7th years work on campus as teaching assistants; 8th years work at a local business.</p>
+            <p>*Quarter 0: Combination of graded and pass/fail work, three-week preparation period</p>
+        </div>
+
+        <div class="footer">3535 Cedar Knolls Drive &nbsp;&nbsp; Kingwood, Texas 77345 &nbsp;&nbsp; 281-358-8933 &nbsp;&nbsp; 281-358-3162 (fax)</div>
     </div>
-
-    <div class="legend">
-        <p>*Dsgn=Designation: Level(L)-high-quality work with normal interaction, Advanced(A)—much depth and very high-quality work with normal interaction, Level/Modified(L/M) high-quality work with adaptive testing situations, Modified(M)-extensive coaching, alternative assessment, or minimum requirements</p>
-        <p>*Work Habits: M=Mastered, C=Competent, I=Improving, R=Reminders needed</p>
-        <p>*Mastery Learning mandates re-testing in all core subject areas to achieve 80%. *Grades less than 80% are due to late work submission.</p>
-        <p>*Independent Study-Research: COM=complete, INC=incomplete, 7th year graded in Quarter 2 (board) and Quarter 4 (overall); 8th year Quarter 2 (paper/board), Quarter 4 (paper/board)</p>
-        <p>*Internship Week is the week in which 7th years work on campus as teaching assistants; 8th years work at a local business.</p>
-        <p>*Quarter 0: Combination of graded and pass/fail work, three-week preparation period</p>
-    </div>
-
-    <div class="footer">3535 Cedar Knolls Drive &nbsp;•&nbsp; Kingwood, Texas 77345 &nbsp;•&nbsp; 281-358-8933 &nbsp;•&nbsp; 281-358-3162 (fax)</div>
 </div>
 </body>
 </html>
