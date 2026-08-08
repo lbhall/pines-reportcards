@@ -20,8 +20,11 @@ class CardPrintTests(TestCase):
         self.q1 = make_period(self.year, name='Quarter 1', order=1)
         self.math = make_subject(name='Math: Pre-Algebra', category=Subject.Category.CORE)
         self.card = ReportCard.objects.create(student=self.student, school_year=self.year)
+        self.card.snapshot_subjects()
         Grade.objects.create(
-            report_card=self.card, subject=self.math, grading_period=self.q1,
+            report_card=self.card,
+            card_subject=self.card.card_subjects.get(name='Math: Pre-Algebra'),
+            grading_period=self.q1,
             assessment='83%', designation='L', work_habits='R')
         AttendanceRecord.objects.create(
             report_card=self.card, grading_period=self.q1, absences=3, tardies=1)
@@ -62,3 +65,11 @@ class CardPrintTests(TestCase):
     def test_report_card_shows_designation_letter(self):
         response = self.client.get(self.url())
         self.assertContains(response, '<td>L</td>', html=True)
+
+    def test_print_uses_snapshot_after_subject_rename(self):
+        self.math.name = 'Math: Algebra I'
+        self.math.save()
+        response = self.client.get(self.url())
+        self.assertContains(response, 'Math: Pre-Algebra')
+        self.assertNotContains(response, 'Math: Algebra I')
+        self.assertContains(response, '83%')

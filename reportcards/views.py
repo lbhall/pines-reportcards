@@ -124,7 +124,8 @@ def _to_int(value):
 
 def _card_context(card):
     periods = list(card.school_year.periods.all())
-    grades = {(g.subject_id, g.grading_period_id): g for g in card.grades.all()}
+    subjects = list(card.card_subjects.all())
+    grades = {(g.card_subject_id, g.grading_period_id): g for g in card.grades.all()}
     attendance = {a.grading_period_id: a for a in card.attendance.all()}
 
     def cell(subject, period):
@@ -136,8 +137,9 @@ def _card_context(card):
             'work_habits': grade.work_habits if grade else '',
         }
 
-    def rows(subjects):
-        return [{'subject': s, 'cells': [cell(s, p) for p in periods]} for s in subjects]
+    def rows(category):
+        return [{'subject': s, 'cells': [cell(s, p) for p in periods]}
+                for s in subjects if s.category == category]
 
     def att_cell(period):
         record = attendance.get(period.pk)
@@ -153,8 +155,8 @@ def _card_context(card):
         'year': card.school_year,
         'periods': periods,
         'grouped_rows': [
-            ('Core Subjects', rows(Subject.objects.core())),
-            ('Resources', rows(Subject.objects.resources())),
+            ('Core Subjects', rows(Subject.Category.CORE)),
+            ('Resources', rows(Subject.Category.RESOURCE)),
         ],
         'attendance_cells': [att_cell(p) for p in periods],
     }
@@ -165,15 +167,16 @@ def card_entry(request, student_pk, year_pk):
     student = get_object_or_404(Student, pk=student_pk)
     year = get_object_or_404(SchoolYear, pk=year_pk)
     card, _ = ReportCard.objects.get_or_create(student=student, school_year=year)
+    card.snapshot_subjects()
     periods = list(year.periods.all())
-    subjects = list(Subject.objects.core()) + list(Subject.objects.resources())
+    subjects = list(card.card_subjects.all())
 
     if request.method == 'POST':
         for subject in subjects:
             for period in periods:
                 prefix = f'grade-{subject.pk}-{period.pk}'
                 Grade.objects.update_or_create(
-                    report_card=card, subject=subject, grading_period=period,
+                    report_card=card, card_subject=subject, grading_period=period,
                     defaults={
                         'assessment': request.POST.get(f'{prefix}-assessment', '').strip(),
                         'designation': _valid_choice(
