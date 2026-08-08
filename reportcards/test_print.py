@@ -37,6 +37,11 @@ class CardPrintTests(TestCase):
         response = self.client.get(self.url())
         self.assertEqual(response.status_code, 302)
 
+    def test_renders_school_logo_and_watermark(self):
+        response = self.client.get(self.url())
+        self.assertContains(response, 'reportcards/img/logo.jpg')
+        self.assertContains(response, 'reportcards/img/watermark.png')
+
     def test_renders_header_and_student(self):
         response = self.client.get(self.url())
         self.assertContains(response, 'Pines Montessori School')
