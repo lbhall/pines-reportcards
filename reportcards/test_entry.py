@@ -44,6 +44,14 @@ class CardEntryGetTests(EntryTestCase):
         self.assertContains(response, f'grade-{self.language_arts.pk}-{self.q1.pk}-assessment')
         self.assertContains(response, f'att-{self.q1.pk}-absences')
 
+    def test_designation_column_header_and_full_word_options(self):
+        response = self.client.get(self.entry_url())
+        self.assertContains(response, 'Designation')
+        self.assertContains(response, '>Level</option>')
+        self.assertContains(response, '>Advanced</option>')
+        self.assertContains(response, '>Level/Modified</option>')
+        self.assertContains(response, '>Modified</option>')
+
     def test_inactive_subject_not_rendered(self):
         self.language_arts.active = False
         self.language_arts.save()

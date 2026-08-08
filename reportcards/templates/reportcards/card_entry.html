@@ -45,7 +45,7 @@
                     <th></th>
                     {% for period in periods %}
                     <th class="fw-normal small">Assessment</th>
-                    <th class="fw-normal small">Dsgn</th>
+                    <th class="fw-normal small">Designation</th>
                     <th class="fw-normal small">Work Habits</th>
                     {% endfor %}
                 </tr>
@@ -62,7 +62,7 @@
                         <select class="form-select form-select-sm" name="grade-{{ row.subject.pk }}-{{ cell.period_pk }}-designation">
                             <option value="">—</option>
                             {% for value, label in designation_choices %}
-                            <option value="{{ value }}" {% if cell.designation == value %}selected{% endif %}>{{ value }}</option>
+                            <option value="{{ value }}" {% if cell.designation == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
                     </td>
