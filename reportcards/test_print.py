@@ -58,3 +58,7 @@ class CardPrintTests(TestCase):
         response = self.client.get(self.url())
         self.assertContains(response, 'M=Mastered, C=Competent, I=Improving, R=Reminders needed')
         self.assertContains(response, 'Dsgn=Designation')
+
+    def test_report_card_shows_designation_letter(self):
+        response = self.client.get(self.url())
+        self.assertContains(response, '<td>L</td>', html=True)
