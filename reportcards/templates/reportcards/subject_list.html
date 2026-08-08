@@ -1,0 +1,33 @@
+{% extends 'reportcards/base.html' %}
+{% block title %}Subjects — Pines Report Cards{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Subjects</h1>
+    <a href="{% url 'subject_add' %}" class="btn btn-success">Add Subject</a>
+</div>
+{% for group, subjects in groups %}
+<h2 class="h5 mt-4">{{ group }}</h2>
+{% if subjects %}
+<div class="card shadow-sm">
+    <table class="table table-hover mb-0 align-middle">
+        <thead><tr><th style="width:4rem">Order</th><th>Name</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+        {% for subject in subjects %}
+        <tr class="{% if not subject.active %}text-muted{% endif %}">
+            <td>{{ subject.order }}</td>
+            <td>{{ subject.name }}</td>
+            <td>{% if subject.active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+            <td class="text-end">
+                <a href="{% url 'subject_edit' subject.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                <a href="{% url 'subject_delete' subject.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-muted">None yet.</p>
+{% endif %}
+{% endfor %}
+{% endblock %}

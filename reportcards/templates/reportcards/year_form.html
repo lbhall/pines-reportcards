@@ -1,0 +1,50 @@
+{% extends 'reportcards/base.html' %}
+{% block title %}{{ title }} — Pines Report Cards{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="h4 mb-3">{{ title }}</h1>
+        <form method="post" class="card shadow-sm">
+            {% csrf_token %}
+            <div class="card-body">
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                    {% if field.errors %}<div class="text-danger small">{{ field.errors|join:', ' }}</div>{% endif %}
+                </div>
+                {% endfor %}
+
+                {% if formset %}
+                <h2 class="h6 mt-4">Grading Periods</h2>
+                {{ formset.management_form }}
+                <table class="table align-middle">
+                    <thead>
+                    <tr><th>Name</th><th style="width:6rem">Order</th><th>Start</th><th>End</th><th>Delete</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for pform in formset %}
+                    <tr>
+                        <td>{{ pform.id }}{{ pform.name }}</td>
+                        <td>{{ pform.order }}</td>
+                        <td>{{ pform.start_date }}</td>
+                        <td>{{ pform.end_date }}</td>
+                        <td class="text-center">{% if pform.instance.pk %}{{ pform.DELETE }}{% endif %}</td>
+                    </tr>
+                    {% if pform.errors %}
+                    <tr><td colspan="5" class="text-danger small">{{ pform.errors }}</td></tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <p class="form-text">Save to add another blank period row.</p>
+                {% endif %}
+
+                <button type="submit" class="btn btn-success">Save</button>
+                <a href="{% url 'year_list' %}" class="btn btn-link">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

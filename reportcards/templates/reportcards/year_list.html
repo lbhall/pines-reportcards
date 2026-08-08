@@ -1,0 +1,33 @@
+{% extends 'reportcards/base.html' %}
+{% block title %}School Years — Pines Report Cards{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">School Years</h1>
+    <a href="{% url 'year_add' %}" class="btn btn-success">Add School Year</a>
+</div>
+{% if years %}
+<div class="card shadow-sm">
+    <table class="table table-hover mb-0 align-middle">
+        <thead><tr><th>Year</th><th>Grading Periods</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+        {% for year in years %}
+        <tr>
+            <td>{{ year.label }}</td>
+            <td>
+                {% for period in year.periods.all %}
+                <span class="badge text-bg-light border">{{ period.name }}{% if period.date_range_display %}: {{ period.date_range_display }}{% endif %}</span>
+                {% empty %}<span class="text-muted">No periods defined</span>{% endfor %}
+            </td>
+            <td class="text-end">
+                <a href="{% url 'year_edit' year.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                <a href="{% url 'year_delete' year.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-muted">No school years yet. Add one, or run <code>manage.py seed_defaults</code>.</p>
+{% endif %}
+{% endblock %}

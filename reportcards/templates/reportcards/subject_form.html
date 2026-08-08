@@ -1,0 +1,28 @@
+{% extends 'reportcards/base.html' %}
+{% block title %}{{ title }} — Pines Report Cards{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="h4 mb-3">{{ title }}</h1>
+        <form method="post" class="card shadow-sm">
+            {% csrf_token %}
+            <div class="card-body">
+                {% for field in form %}
+                <div class="mb-3 {% if field.name == 'active' %}form-check form-switch ms-1{% endif %}">
+                    {% if field.name == 'active' %}
+                    {{ field }}
+                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {% else %}
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% endif %}
+                    {% if field.errors %}<div class="text-danger small">{{ field.errors|join:', ' }}</div>{% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-success">Save</button>
+                <a href="{% url 'subject_list' %}" class="btn btn-link">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
