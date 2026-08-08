@@ -6,6 +6,7 @@ from django.test import TestCase
 
 from .models import (
     AttendanceRecord,
+    CardSubject,
     Grade,
     GradingPeriod,
     ReportCard,
@@ -38,7 +39,9 @@ def make_subject(name='Language Arts', category=Subject.Category.CORE, order=1):
 def make_report_card(student=None, school_year=None):
     student = student or make_student()
     school_year = school_year or make_school_year()
-    return ReportCard.objects.create(student=student, school_year=school_year)
+    card = ReportCard.objects.create(student=student, school_year=school_year)
+    card.snapshot_subjects()
+    return card
 
 
 class StudentModelTests(TestCase):
@@ -130,16 +133,58 @@ class ReportCardModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             ReportCard.objects.create(student=card.student, school_year=card.school_year)
 
+    def test_snapshot_copies_active_subjects(self):
+        make_subject(name='Language Arts', category=Subject.Category.CORE)
+        make_subject(name='Electives', category=Subject.Category.RESOURCE, order=2)
+        inactive = make_subject(name='Old Subject', order=9)
+        inactive.active = False
+        inactive.save()
+        card = make_report_card()
+        names = list(card.card_subjects.values_list('name', flat=True))
+        self.assertIn('Language Arts', names)
+        self.assertIn('Electives', names)
+        self.assertNotIn('Old Subject', names)
+
+    def test_snapshot_is_idempotent(self):
+        make_subject(name='Language Arts')
+        card = make_report_card()
+        card.snapshot_subjects()
+        self.assertEqual(card.card_subjects.count(), 1)
+
+    def test_renaming_subject_does_not_change_existing_card(self):
+        subject = make_subject(name='Math: Pre-Algebra')
+        card = make_report_card()
+        subject.name = 'Math: Algebra I'
+        subject.save()
+        self.assertEqual(card.card_subjects.get().name, 'Math: Pre-Algebra')
+
+    def test_deleting_subject_keeps_card_history(self):
+        subject = make_subject(name='Humanities')
+        card = make_report_card()
+        subject.delete()
+        self.assertEqual(card.card_subjects.get().name, 'Humanities')
+
+    def test_new_card_sees_edited_subjects(self):
+        subject = make_subject(name='Math: Pre-Algebra')
+        old_card = make_report_card()
+        subject.name = 'Math: Algebra I'
+        subject.save()
+        new_card = make_report_card(
+            student=make_student(name='Ada Lovelace'),
+            school_year=old_card.school_year)
+        self.assertEqual(new_card.card_subjects.get().name, 'Math: Algebra I')
+
 
 class GradeModelTests(TestCase):
     def setUp(self):
+        make_subject(name='Language Arts')
         self.card = make_report_card()
         self.period = make_period(self.card.school_year)
-        self.subject = make_subject()
+        self.card_subject = self.card.card_subjects.get()
 
     def test_create_grade_with_choices(self):
         grade = Grade.objects.create(
-            report_card=self.card, subject=self.subject, grading_period=self.period,
+            report_card=self.card, card_subject=self.card_subject, grading_period=self.period,
             assessment='83%', designation=Grade.Designation.LEVEL,
             work_habits=Grade.WorkHabits.REMINDERS,
         )
@@ -149,7 +194,7 @@ class GradeModelTests(TestCase):
 
     def test_blank_values_allowed(self):
         grade = Grade.objects.create(
-            report_card=self.card, subject=self.subject, grading_period=self.period,
+            report_card=self.card, card_subject=self.card_subject, grading_period=self.period,
         )
         self.assertEqual(grade.assessment, '')
         self.assertEqual(grade.designation, '')
@@ -169,12 +214,17 @@ class GradeModelTests(TestCase):
 
     def test_unique_per_cell(self):
         Grade.objects.create(
-            report_card=self.card, subject=self.subject, grading_period=self.period,
+            report_card=self.card, card_subject=self.card_subject, grading_period=self.period,
         )
         with self.assertRaises(IntegrityError):
             Grade.objects.create(
-                report_card=self.card, subject=self.subject, grading_period=self.period,
+                report_card=self.card, card_subject=self.card_subject, grading_period=self.period,
             )
+
+    def test_card_subject_snapshot_fields(self):
+        self.assertEqual(self.card_subject.name, 'Language Arts')
+        self.assertEqual(self.card_subject.category, CardSubject.Category.CORE)
+        self.assertIsNotNone(self.card_subject.source_subject)
 
 
 class AttendanceRecordModelTests(TestCase):

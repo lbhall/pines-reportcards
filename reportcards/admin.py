@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     AttendanceRecord,
+    CardSubject,
     Grade,
     GradingPeriod,
     ReportCard,
@@ -34,6 +35,11 @@ class SubjectAdmin(admin.ModelAdmin):
     list_filter = ['category', 'active']
 
 
+class CardSubjectInline(admin.TabularInline):
+    model = CardSubject
+    extra = 0
+
+
 class GradeInline(admin.TabularInline):
     model = Grade
     extra = 0
@@ -48,4 +54,4 @@ class AttendanceInline(admin.TabularInline):
 class ReportCardAdmin(admin.ModelAdmin):
     list_display = ['student', 'school_year']
     list_filter = ['school_year']
-    inlines = [GradeInline, AttendanceInline]
+    inlines = [CardSubjectInline, GradeInline, AttendanceInline]

@@ -92,6 +92,38 @@ class ReportCard(models.Model):
     def __str__(self):
         return f'{self.student} — {self.school_year}'
 
+    def snapshot_subjects(self):
+        """Copy the currently active subjects onto this card, once.
+
+        Grades attach to the copies, so later edits to the Subject list only
+        affect report cards created afterwards.
+        """
+        if self.card_subjects.exists():
+            return
+        for subject in Subject.objects.filter(active=True):
+            CardSubject.objects.create(
+                report_card=self, source_subject=subject,
+                name=subject.name, category=subject.category, order=subject.order)
+
+
+class CardSubject(models.Model):
+    """A subject as it existed when a report card was created."""
+
+    Category = Subject.Category
+
+    report_card = models.ForeignKey(ReportCard, on_delete=models.CASCADE, related_name='card_subjects')
+    source_subject = models.ForeignKey(
+        Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='card_subjects')
+    name = models.CharField(max_length=200)
+    category = models.CharField(max_length=10, choices=Subject.Category.choices)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return f'{self.name} ({self.report_card})'
+
 
 class Grade(models.Model):
     class Designation(models.TextChoices):
@@ -107,7 +139,7 @@ class Grade(models.Model):
         REMINDERS = 'R', 'Reminders Needed'
 
     report_card = models.ForeignKey(ReportCard, on_delete=models.CASCADE, related_name='grades')
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='grades')
+    card_subject = models.ForeignKey(CardSubject, on_delete=models.CASCADE, related_name='grades')
     grading_period = models.ForeignKey(GradingPeriod, on_delete=models.CASCADE, related_name='grades')
     assessment = models.CharField(
         max_length=20, blank=True, default='',
@@ -118,12 +150,12 @@ class Grade(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['report_card', 'subject', 'grading_period'],
+                fields=['card_subject', 'grading_period'],
                 name='unique_grade_per_cell'),
         ]
 
     def __str__(self):
-        return f'{self.report_card} / {self.subject} / {self.grading_period.name}'
+        return f'{self.report_card} / {self.card_subject.name} / {self.grading_period.name}'
 
 
 class AttendanceRecord(models.Model):
