@@ -1,0 +1,14 @@
+[run]
+source = reportcards
+omit =
+    */migrations/*
+    */tests.py
+    */test_*.py
+    */tests/*
+    */__init__.py
+    */apps.py
+    # One-off utilities run by hand, not part of the app surface.
+    */management/commands/*
+
+[report]
+show_missing = True
