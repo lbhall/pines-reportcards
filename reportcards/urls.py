@@ -15,4 +15,6 @@ urlpatterns = [
     path('years/add/', views.year_add, name='year_add'),
     path('years/<int:pk>/edit/', views.year_edit, name='year_edit'),
     path('years/<int:pk>/delete/', views.year_delete, name='year_delete'),
+    path('cards/<int:student_pk>/<int:year_pk>/', views.card_entry, name='card_entry'),
+    path('cards/<int:pk>/print/', views.card_print, name='card_print'),
 ]

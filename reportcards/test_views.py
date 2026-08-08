@@ -55,6 +55,17 @@ class HomeViewTests(AuthTestCase):
         response = self.client.get(reverse('home'))
         self.assertContains(response, 'No students yet')
 
+    def test_report_card_link_when_year_exists(self):
+        student = make_student()
+        year = make_school_year()
+        response = self.client.get(reverse('home'))
+        self.assertContains(response, reverse('card_entry', args=[student.pk, year.pk]))
+
+    def test_no_report_card_link_without_year(self):
+        make_student()
+        response = self.client.get(reverse('home'))
+        self.assertNotContains(response, '/cards/')
+
 
 class StudentCrudTests(AuthTestCase):
     def test_create_student(self):

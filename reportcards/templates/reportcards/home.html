@@ -20,6 +20,9 @@
             <td>{{ student.name }}</td>
             <td>{{ student.date_of_birth|date:'F j, Y' }}</td>
             <td class="text-end">
+                {% if current_year %}
+                <a href="{% url 'card_entry' student.pk current_year.pk %}" class="btn btn-sm btn-success">Report Card ({{ current_year.label }})</a>
+                {% endif %}
                 <a href="{% url 'student_edit' student.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
                 <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
             </td>
