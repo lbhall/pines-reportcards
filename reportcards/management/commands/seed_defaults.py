@@ -23,7 +23,7 @@ RESOURCE_SUBJECTS = [
 
 PERIODS = [
     # (name, order, start, end)
-    ('Quarter 0', 0, datetime.date(2025, 8, 11), datetime.date(2025, 8, 30)),
+    ('Orientation', 0, datetime.date(2025, 8, 11), datetime.date(2025, 8, 30)),
     ('Quarter 1', 1, datetime.date(2025, 9, 2), None),
     ('Quarter 2', 2, None, None),
     ('Quarter 3', 3, None, None),
