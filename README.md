@@ -43,7 +43,7 @@ Tests and lint (CI enforces both, coverage must stay ≥ 80%):
 
 Merges to `main` deploy automatically via GitHub Actions (`ci.yml`): lint +
 tests, then SSH to the server and run `deploy.sh`, which pulls, installs,
-migrates, collects static files, and restarts `gunicorn.pines-reportcards`.
+migrates, collects static files, and restarts `gunicorn.reportcards`.
 
 Environment (set on the systemd unit): `SECRET_KEY`, `DEBUG=false`,
 `ALLOWED_HOSTS`, and `DJANGO_DB_PATH` if the sqlite file lives outside the
@@ -54,8 +54,8 @@ checkout.
 1. nginx vhost for `reportcards.emcfunleague.com`; site root
    `/var/www/reportcards.emcfunleague.com/source` (git checkout) with venv at
    `../venv`
-2. systemd unit `gunicorn.pines-reportcards` running
+2. systemd unit `gunicorn.reportcards` running
    `gunicorn pines.wsgi:application`
 3. sudoers rule:
-   `bhall ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart gunicorn.pines-reportcards`
+   `bhall ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart gunicorn.reportcards`
 4. Repo secret `DEPLOY_SSH_KEY` with the deploy private key

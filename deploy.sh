@@ -24,6 +24,6 @@ echo "==> Collecting static files"
 "$VENV/python" manage.py collectstatic --noinput
 
 echo "==> Restarting gunicorn"
-sudo systemctl restart gunicorn.pines-reportcards
+sudo systemctl restart gunicorn.reportcards
 
 echo "==> Deploy complete"
