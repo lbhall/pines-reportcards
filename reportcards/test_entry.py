@@ -63,6 +63,10 @@ class CardEntryGetTests(EntryTestCase):
         self.assertContains(response, f'grade-{la.pk}-{self.q1.pk}-assessment')
         self.assertContains(response, f'att-{self.q1.pk}-absences')
 
+    def test_links_to_year_edit_for_quarter_dates(self):
+        response = self.client.get(self.entry_url())
+        self.assertContains(response, reverse('year_edit', args=[self.year.pk]))
+
     def test_designation_column_header_and_full_word_options(self):
         response = self.client.get(self.entry_url())
         self.assertContains(response, 'Designation')
