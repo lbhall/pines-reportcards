@@ -8,10 +8,13 @@ from .models import SchoolYear, Subject
 class SeedDefaultsTests(TestCase):
     def test_creates_default_subjects_and_year(self):
         call_command('seed_defaults')
-        self.assertEqual(Subject.objects.core().count(), 5)
-        self.assertEqual(Subject.objects.resources().count(), 5)
+        self.assertEqual(Subject.objects.core().count(), 6)
+        self.assertEqual(Subject.objects.resources().count(), 4)
         self.assertTrue(Subject.objects.filter(name='Independent Study-Research').exists())
         self.assertTrue(Subject.objects.filter(name='Internship week').exists())
+        spanish = Subject.objects.get(name='Spanish')
+        self.assertEqual(spanish.category, Subject.Category.CORE)
+        self.assertFalse(Subject.objects.filter(name='Foreign Language').exists())
 
         year = SchoolYear.objects.get(label='2025-26')
         self.assertEqual(year.periods.count(), 5)
