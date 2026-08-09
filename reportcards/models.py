@@ -67,6 +67,10 @@ class Subject(models.Model):
         RESOURCE = 'resource', 'Resource'
 
     name = models.CharField(max_length=200)
+    subtitle = models.CharField(
+        max_length=200, blank=True, default='',
+        help_text='Optional, shown after the name — e.g. "Pre-Algebra" for "Math: Pre-Algebra". '
+                  'Can be adjusted per report card on the entry screen.')
     category = models.CharField(max_length=10, choices=Category.choices)
     order = models.PositiveSmallIntegerField(default=0)
     active = models.BooleanField(default=True)
@@ -77,7 +81,11 @@ class Subject(models.Model):
         ordering = ['order', 'name']
 
     def __str__(self):
-        return self.name
+        return self.display_name
+
+    @property
+    def display_name(self):
+        return f'{self.name}: {self.subtitle}' if self.subtitle else self.name
 
 
 class ReportCard(models.Model):
@@ -103,7 +111,8 @@ class ReportCard(models.Model):
         for subject in Subject.objects.filter(active=True):
             CardSubject.objects.create(
                 report_card=self, source_subject=subject,
-                name=subject.name, category=subject.category, order=subject.order)
+                name=subject.name, subtitle=subject.subtitle,
+                category=subject.category, order=subject.order)
 
 
 class CardSubject(models.Model):
@@ -115,6 +124,7 @@ class CardSubject(models.Model):
     source_subject = models.ForeignKey(
         Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='card_subjects')
     name = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=200, blank=True, default='')
     category = models.CharField(max_length=10, choices=Subject.Category.choices)
     order = models.PositiveSmallIntegerField(default=0)
 
@@ -122,7 +132,11 @@ class CardSubject(models.Model):
         ordering = ['order', 'name']
 
     def __str__(self):
-        return f'{self.name} ({self.report_card})'
+        return f'{self.display_name} ({self.report_card})'
+
+    @property
+    def display_name(self):
+        return f'{self.name}: {self.subtitle}' if self.subtitle else self.name
 
 
 class Grade(models.Model):

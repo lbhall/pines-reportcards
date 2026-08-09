@@ -173,6 +173,10 @@ def card_entry(request, student_pk, year_pk):
 
     if request.method == 'POST':
         for subject in subjects:
+            subtitle = request.POST.get(f'subtitle-{subject.pk}')
+            if subtitle is not None and subtitle.strip() != subject.subtitle:
+                subject.subtitle = subtitle.strip()
+                subject.save(update_fields=['subtitle'])
             for period in periods:
                 prefix = f'grade-{subject.pk}-{period.pk}'
                 Grade.objects.update_or_create(

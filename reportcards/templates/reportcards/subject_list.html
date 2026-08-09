@@ -15,7 +15,7 @@
         {% for subject in subjects %}
         <tr class="{% if not subject.active %}text-muted{% endif %}">
             <td>{{ subject.order }}</td>
-            <td>{{ subject.name }}</td>
+            <td>{{ subject.display_name }}</td>
             <td>{% if subject.active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
             <td class="text-end">
                 <a href="{% url 'subject_edit' subject.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
