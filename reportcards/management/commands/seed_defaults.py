@@ -10,11 +10,11 @@ CORE_SUBJECTS = [
     'Math: Pre-Algebra',
     'Physical Science',
     'Humanities',
+    'Spanish',
     'Independent Study-Research',
 ]
 
 RESOURCE_SUBJECTS = [
-    'Foreign Language',
     'Electives',
     'Health & Fitness',
     'Guided Reflection',
