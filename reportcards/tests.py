@@ -32,8 +32,8 @@ def make_period(school_year, name='Quarter 1', order=1,
     )
 
 
-def make_subject(name='Language Arts', category=Subject.Category.CORE, order=1):
-    return Subject.objects.create(name=name, category=category, order=order)
+def make_subject(name='Language Arts', category=Subject.Category.CORE, order=1, subtitle=''):
+    return Subject.objects.create(name=name, category=category, order=order, subtitle=subtitle)
 
 
 def make_report_card(student=None, school_year=None):
@@ -121,6 +121,12 @@ class SubjectModelTests(TestCase):
         b = make_subject(name='B Subject', order=2)
         a = make_subject(name='A Subject', order=1)
         self.assertEqual(list(Subject.objects.core()), [a, b])
+
+    def test_display_name_with_subtitle(self):
+        math = make_subject(name='Math', subtitle='Pre-Algebra')
+        plain = make_subject(name='Humanities', order=2)
+        self.assertEqual(math.display_name, 'Math: Pre-Algebra')
+        self.assertEqual(plain.display_name, 'Humanities')
 
 
 class ReportCardModelTests(TestCase):
@@ -225,6 +231,26 @@ class GradeModelTests(TestCase):
         self.assertEqual(self.card_subject.name, 'Language Arts')
         self.assertEqual(self.card_subject.category, CardSubject.Category.CORE)
         self.assertIsNotNone(self.card_subject.source_subject)
+
+    def test_snapshot_copies_subtitle_and_display_name(self):
+        make_subject(name='Math', subtitle='Pre-Algebra', order=2)
+        card = make_report_card(
+            student=make_student(name='Ada Lovelace'),
+            school_year=make_school_year(label='2026-27'))
+        math = card.card_subjects.get(name='Math')
+        self.assertEqual(math.subtitle, 'Pre-Algebra')
+        self.assertEqual(math.display_name, 'Math: Pre-Algebra')
+
+    def test_card_subtitle_editable_without_touching_source(self):
+        make_subject(name='Math', subtitle='Pre-Algebra', order=2)
+        card = make_report_card(
+            student=make_student(name='Ada Lovelace'),
+            school_year=make_school_year(label='2026-27'))
+        math = card.card_subjects.get(name='Math')
+        math.subtitle = 'Algebra I'
+        math.save()
+        self.assertEqual(math.display_name, 'Math: Algebra I')
+        self.assertEqual(Subject.objects.get(name='Math').subtitle, 'Pre-Algebra')
 
 
 class AttendanceRecordModelTests(TestCase):

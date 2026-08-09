@@ -168,7 +168,7 @@
             </tr>
             {% for row in rows %}
             <tr>
-                <td class="subject">{{ row.subject.name }}</td>
+                <td class="subject">{{ row.subject.display_name }}</td>
                 {% for cell in row.cells %}
                 <td>{{ cell.assessment }}</td>
                 <td>{{ cell.designation }}</td>

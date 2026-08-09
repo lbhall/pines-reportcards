@@ -17,7 +17,8 @@ class EntryTestCase(TestCase):
         self.q0 = make_period(self.year, name='Quarter 0', order=0)
         self.q1 = make_period(self.year, name='Quarter 1', order=1)
         self.language_arts = make_subject(name='Language Arts', category=Subject.Category.CORE)
-        self.electives = make_subject(name='Electives', category=Subject.Category.RESOURCE, order=2)
+        self.math = make_subject(name='Math', category=Subject.Category.CORE, order=2, subtitle='Pre-Algebra')
+        self.electives = make_subject(name='Electives', category=Subject.Category.RESOURCE, order=3)
 
     def entry_url(self):
         return reverse('card_entry', args=[self.student.pk, self.year.pk])
@@ -42,7 +43,14 @@ class CardEntryGetTests(EntryTestCase):
         response = self.client.get(self.entry_url())
         self.assertEqual(response.status_code, 200)
         card = ReportCard.objects.get(student=self.student, school_year=self.year)
-        self.assertEqual(card.card_subjects.count(), 2)
+        self.assertEqual(card.card_subjects.count(), 3)
+
+    def test_renders_editable_subtitle_input(self):
+        card = self.create_card()
+        math = self.card_subject(card, 'Math')
+        response = self.client.get(self.entry_url())
+        self.assertContains(response, f'subtitle-{math.pk}')
+        self.assertContains(response, 'Pre-Algebra')
 
     def test_renders_subjects_periods_and_inputs(self):
         card = self.create_card()
@@ -157,6 +165,22 @@ class CardEntryPostTests(EntryTestCase):
         self.client.post(self.entry_url(), self.post_data())
         grade = Grade.objects.get(card_subject=self.el, grading_period=self.q0)
         self.assertEqual(grade.assessment, '')
+
+    def test_subtitle_saved_per_card_without_touching_subject(self):
+        math = self.card_subject(self.card, 'Math')
+        self.client.post(self.entry_url(), self.post_data(**{
+            f'subtitle-{math.pk}': 'Algebra I',
+        }))
+        math.refresh_from_db()
+        self.assertEqual(math.subtitle, 'Algebra I')
+        self.math.refresh_from_db()
+        self.assertEqual(self.math.subtitle, 'Pre-Algebra')
+
+    def test_subtitle_unchanged_when_not_posted(self):
+        math = self.card_subject(self.card, 'Math')
+        self.client.post(self.entry_url(), self.post_data())
+        math.refresh_from_db()
+        self.assertEqual(math.subtitle, 'Pre-Algebra')
 
     def test_grades_saved_for_snapshot_even_after_subject_deleted(self):
         self.language_arts.delete()

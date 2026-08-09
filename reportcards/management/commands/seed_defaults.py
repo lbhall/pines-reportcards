@@ -6,19 +6,20 @@ from django.core.management.base import BaseCommand
 from reportcards.models import GradingPeriod, SchoolYear, Subject
 
 CORE_SUBJECTS = [
-    'Language Arts',
-    'Math: Pre-Algebra',
-    'Physical Science',
-    'Humanities',
-    'Spanish',
-    'Independent Study-Research',
+    # (name, subtitle)
+    ('Language Arts', ''),
+    ('Math', 'Pre-Algebra'),
+    ('Physical Science', ''),
+    ('Humanities', ''),
+    ('Spanish', ''),
+    ('Independent Study-Research', ''),
 ]
 
 RESOURCE_SUBJECTS = [
-    'Electives',
-    'Health & Fitness',
-    'Guided Reflection',
-    'Internship week',
+    ('Electives', ''),
+    ('Health & Fitness', ''),
+    ('Guided Reflection', ''),
+    ('Internship week', ''),
 ]
 
 PERIODS = [
@@ -35,12 +36,14 @@ class Command(BaseCommand):
     help = 'Create the default subjects and the 2025-26 school year with its grading periods.'
 
     def handle(self, *args, **options):
-        for order, name in enumerate(CORE_SUBJECTS, start=1):
+        for order, (name, subtitle) in enumerate(CORE_SUBJECTS, start=1):
             Subject.objects.get_or_create(
-                name=name, category=Subject.Category.CORE, defaults={'order': order})
-        for order, name in enumerate(RESOURCE_SUBJECTS, start=1):
+                name=name, category=Subject.Category.CORE,
+                defaults={'order': order, 'subtitle': subtitle})
+        for order, (name, subtitle) in enumerate(RESOURCE_SUBJECTS, start=1):
             Subject.objects.get_or_create(
-                name=name, category=Subject.Category.RESOURCE, defaults={'order': order})
+                name=name, category=Subject.Category.RESOURCE,
+                defaults={'order': order, 'subtitle': subtitle})
 
         year, _ = SchoolYear.objects.get_or_create(
             label='2025-26',

@@ -53,7 +53,12 @@
                 <tbody>
                 {% for row in rows %}
                 <tr>
-                    <th class="subject-col">{{ row.subject.name }}</th>
+                    <th class="subject-col">
+                        {{ row.subject.name }}
+                        <input type="text" class="form-control form-control-sm fw-normal mt-1"
+                               name="subtitle-{{ row.subject.pk }}" value="{{ row.subject.subtitle }}"
+                               placeholder="subtitle" aria-label="{{ row.subject.name }} subtitle">
+                    </th>
                     {% for cell in row.cells %}
                     <td><input type="text" class="form-control form-control-sm"
                                name="grade-{{ row.subject.pk }}-{{ cell.period_pk }}-assessment"
