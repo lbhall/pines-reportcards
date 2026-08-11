@@ -45,9 +45,23 @@ Merges to `main` deploy automatically via GitHub Actions (`ci.yml`): lint +
 tests, then SSH to the server and run `deploy.sh`, which pulls, installs,
 migrates, collects static files, and restarts `gunicorn.reportcards.service`.
 
-Environment (set on the systemd unit): `SECRET_KEY`, `DEBUG=false`,
-`ALLOWED_HOSTS`, and `DJANGO_DB_PATH` if the sqlite file lives outside the
-checkout.
+Environment (in `/etc/gunicorn.reportcards.env`, loaded by the systemd unit):
+`SECRET_KEY`, `DEBUG=false`, `ALLOWED_HOSTS`, and `DJANGO_DB_PATH` pointing at
+the sqlite file **outside the checkout** (`../data/db.sqlite3`) so git
+operations can never touch it.
+
+### Backups
+
+`backup.sh` makes a consistent online backup of the sqlite database (safe
+while the app is running), gzips it into `../backups/db-YYYY-MM-DD.sqlite3.gz`,
+and prunes anything older than 30 days. Install as a nightly cron job:
+
+```
+15 2 * * * bash /var/www/reportcards.emcfunleague.com/source/backup.sh
+```
+
+Restore: `gunzip` the chosen backup, stop the service, replace the file at
+`DJANGO_DB_PATH`, start the service.
 
 ### One-time server setup
 
